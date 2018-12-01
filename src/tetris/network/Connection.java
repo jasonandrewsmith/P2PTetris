@@ -1,6 +1,7 @@
 package tetris.network;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 public class Connection implements Serializable {
 
@@ -30,5 +31,21 @@ public class Connection implements Serializable {
 
 	public void setPort(int port) {
 		this.port = port;
+	}
+
+	public boolean equals(Object o) {
+		if (o == this) {
+			return true;
+		}
+		if (!(o instanceof Connection)) {
+			return false;
+		}
+		
+		Connection c = (Connection) o;
+		return c.getPort() == this.getPort() && c.getHost().equals(this.getHost());
+	}
+	
+	public int hashCode() {
+		return Objects.hash(host, port);
 	}
 }
