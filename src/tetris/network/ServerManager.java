@@ -100,5 +100,12 @@ public class ServerManager {
 				e.printStackTrace();
 			}
 		}
+		
+		try {
+			registry.unbind("TetrisServer");
+		} catch (RemoteException | NotBoundException e) {
+			System.err.println("Failed to unbind \"TetrisServer\" from current registry.");
+			e.printStackTrace();
+		}
 	}
 }
