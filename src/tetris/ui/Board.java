@@ -7,10 +7,13 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.util.ArrayList;
 
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.Timer;
+
+import tetris.network.*;
 
 public class Board extends JPanel implements ActionListener {
 
@@ -26,15 +29,31 @@ public class Board extends JPanel implements ActionListener {
 	private JLabel statusBar;
 	private Shape curPiece;
 	private Tetrominoes[] board;
-
+	public ArrayList<Action> actions = new ArrayList<>();
+	private Tetris parent;
+	
 	public Board(Tetris parent) {
 		setFocusable(true);
 		curPiece = new Shape();
 		timer = new Timer(400, this); // timer for lines down
 		statusBar = parent.getStatusBar();
 		board = new Tetrominoes[BOARD_WIDTH * BOARD_HEIGHT];
+		
+		this.parent = parent;
+		
+		setBackground(Color.blue);
+		setPreferredSize(new Dimension(200, 400));
+		
 		clearBoard();
 		addKeyListener(new MyTetrisAdapter());
+	}
+	
+	private String encodeActions() {
+		return null;
+	}
+	
+	private void sendActions() {
+		
 	}
 
 	public int squareWidth() {
