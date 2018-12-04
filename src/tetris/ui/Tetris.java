@@ -22,7 +22,7 @@ import tetris.network.*;
 
 public class Tetris extends JFrame {
 
-	private JLabel statusBar;
+	public JLabel localLabel, opponentLabel;
 	private Connection connection;
 	public BoardOpponent boardOpponent;
 	public Board board;
@@ -34,13 +34,16 @@ public class Tetris extends JFrame {
 	public JButton hostBtn, connectBtn;
 
 	public Tetris() {
-		statusBar = new JLabel("0");
-		add(statusBar, BorderLayout.SOUTH);
-
+		localLabel = new JLabel("0");
+		opponentLabel = new JLabel("0");
+		
 		board = new Board(this);
 		boardOpponent = new BoardOpponent(this);
 		JPanel infoPanel = createInputPanel();
-
+		
+		board.add(localLabel, BorderLayout.SOUTH);
+		boardOpponent.add(opponentLabel, BorderLayout.SOUTH);
+		
 		add(boardOpponent, BorderLayout.LINE_END);
 		add(infoPanel, BorderLayout.CENTER);
 		add(board, BorderLayout.LINE_START);
@@ -156,6 +159,7 @@ public class Tetris extends JFrame {
 			serverManager = new ServerManager(connection);
 			
 			serverManager.connect( new Connection(hostname, portNumber) );
+//			serverManager.connect( new Connection("localhost", 12550) );
 			serverManager.send("Sup");
 		} catch (Exception e) {
 			System.err.println("Error while establishing connection!\n");
@@ -178,11 +182,7 @@ public class Tetris extends JFrame {
 		System.out.println("HANDSHAKE RECIEVED :: CLIENT");
 		isReadyToStart = true;
 	}
-	
-	public JLabel getStatusBar() {
-		return statusBar;
-	}
-	
+
 	// block until connection established
 	public void waitToStart() {
 		while(!isReadyToStart) {
@@ -203,6 +203,7 @@ public class Tetris extends JFrame {
 		
 		myTetris.waitToStart();
 		myTetris.board.start();
+		myTetris.boardOpponent.start();
 	}
 
 }

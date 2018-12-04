@@ -19,4 +19,29 @@ enum Tetrominoes {
 		this.coords = coords;
 		color = c;
 	}
+	
+	public String getCoords() {
+		String result = "[";
+		for(int[] row : coords) {
+			result += "[ ";
+			for(int i : row) {
+				result += i+" ";
+			}
+			result += "]";
+		}
+		result += " ] ";
+		return result;
+	}
+
+	public void setCoords(int[][] coords) {
+		this.coords = coords;
+	}
+
+	public Color getColor() {
+		return color;
+	}
+
+	public void setColor(Color color) {
+		this.color = color;
+	}
 }

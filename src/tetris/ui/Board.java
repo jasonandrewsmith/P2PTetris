@@ -28,7 +28,7 @@ public class Board extends JPanel implements ActionListener {
 	private int curY = 0;
 	private JLabel statusBar;
 	private Shape curPiece;
-	private Tetrominoes[] board;
+	public Tetrominoes[] board;
 	public ArrayList<Action> actions = new ArrayList<>();
 	private Tetris parent;
 	
@@ -36,7 +36,7 @@ public class Board extends JPanel implements ActionListener {
 		setFocusable(true);
 		curPiece = new Shape();
 		timer = new Timer(400, this); // timer for lines down
-		statusBar = parent.getStatusBar();
+		statusBar = parent.localLabel;
 		board = new Tetrominoes[BOARD_WIDTH * BOARD_HEIGHT];
 		
 		this.parent = parent;
@@ -46,14 +46,6 @@ public class Board extends JPanel implements ActionListener {
 		
 		clearBoard();
 		addKeyListener(new MyTetrisAdapter());
-	}
-	
-	private String encodeActions() {
-		return null;
-	}
-	
-	private void sendActions() {
-		
 	}
 
 	public int squareWidth() {
@@ -95,6 +87,7 @@ public class Board extends JPanel implements ActionListener {
 
 		if (!tryMove(curPiece, curX, curY - 1)) {
 			curPiece.setShape(Tetrominoes.NoShape);
+			sendData(encodeData());
 			timer.stop();
 			isStarted = false;
 			statusBar.setText("Game Over");
@@ -104,16 +97,53 @@ public class Board extends JPanel implements ActionListener {
 	private void oneLineDown() {
 		if (!tryMove(curPiece, curX, curY - 1))
 			pieceDropped();
+//		sendData(encodeData());
 	}
-
+	
+	private String encodeData() {
+		String jsonString = "";
+		
+		/*** overkill for what I need (aka just the enum type)
+		jsonString += "[\n";
+		for(int i = 0; i < 10; i++) {
+			String current = "\t{\n\t\t";
+			current += "\"type\": \""+board[i].name()+"\",\n\t\t";
+			current += "\"coords\":"+board[i].getCoords()+",\n\t\t";
+			current += "\"R\":"+board[i].color.getRed()+",\n\t\t";
+			current += "\"G\":"+board[i].color.getGreen()+",\n\t\t";
+			current += "\"B\":"+board[i].color.getBlue()+",\n\t\t";
+			current += "\"A\":"+board[i].color.getAlpha()+"\n\t}\n";
+			jsonString += current;
+		}
+		jsonString +="]";
+		***/
+		jsonString += statusBar.getText()+"\n";
+		for(int i = 0; i < board.length; i++) {
+			jsonString += board[i].name()+"\n";
+		}
+		
+		return jsonString;
+	}
+	
+	private void sendData(String data) {
+		try {
+			parent.serverManager.send(data);
+		} catch(Exception e) {
+			System.out.println("Data failed to send!");
+		}
+	}
+	
 	@Override
-	public void actionPerformed(ActionEvent ae) {
+	public void actionPerformed(ActionEvent ae) {		
+//		System.out.println("Sent data!");
+		
 		if (isFallingFinished) {
 			isFallingFinished = false;
 			newPiece();
 		} else {
 			oneLineDown();
 		}
+		sendData(encodeData());
 	}
 
 	private void drawSquare(Graphics g, int x, int y, Tetrominoes shape) {
@@ -131,6 +161,7 @@ public class Board extends JPanel implements ActionListener {
 	@Override
 	public void paint(Graphics g) {
 		super.paint(g);
+		
 		Dimension size = getSize();
 		int boardTop = (int) size.getHeight() - BOARD_HEIGHT * squareHeight();
 
@@ -198,6 +229,7 @@ public class Board extends JPanel implements ActionListener {
 		curPiece = newPiece;
 		curX = newX;
 		curY = newY;
+//		sendData(encodeData());
 		repaint();
 
 		return true;
@@ -240,18 +272,21 @@ public class Board extends JPanel implements ActionListener {
 		int newY = curY;
 
 		while (newY > 0) {
-			if (!tryMove(curPiece, curX, newY - 1))
+			if (!tryMove(curPiece, curX, newY - 1)) {
 				break;
+			}
 
 			--newY;
 		}
-
 		pieceDropped();
 	}
 
 	class MyTetrisAdapter extends KeyAdapter {
 		@Override
 		public void keyPressed(KeyEvent ke) {
+
+//			sendData(encodeData());
+			
 			if (!isStarted || curPiece.getShape() == Tetrominoes.NoShape)
 				return;
 
