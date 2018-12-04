@@ -41,7 +41,7 @@ public class Board extends JPanel implements ActionListener {
 		
 		this.parent = parent;
 		
-		setBackground(Color.blue);
+		setBackground(new Color(0, 255, 153));
 		setPreferredSize(new Dimension(200, 400));
 		
 		clearBoard();

@@ -32,7 +32,7 @@ public class BoardOpponent extends JPanel implements ActionListener {
 	
 	public BoardOpponent(Tetris parent) {
 		setPreferredSize(new Dimension(200, 400));
-		setBackground(Color.CYAN);
+		setBackground(new Color(255, 102, 102));
 		
 		this.parent = parent;
 		curPiece = new Shape();
