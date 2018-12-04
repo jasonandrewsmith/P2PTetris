@@ -81,7 +81,8 @@ public class Board extends JPanel implements ActionListener {
 		removeFullLines();
 
 		if (!isFallingFinished) {
-			newPiece();
+//			newPiece();
+			isFallingFinished = true;
 		}
 	}
 
@@ -143,6 +144,7 @@ public class Board extends JPanel implements ActionListener {
 //		System.out.println("Sent data!");
 		
 		if (isFallingFinished) {
+			processJunkQueue();
 			isFallingFinished = false;
 			newPiece();
 		} else {
@@ -264,6 +266,8 @@ public class Board extends JPanel implements ActionListener {
 			}
 
 			if (numFullLines > 0) {
+				sendData("ATTACK " + numFullLines);
+				
 				numLinesRemoved += numFullLines;
 				statusBar.setText(String.valueOf(numLinesRemoved));
 				isFallingFinished = true;
@@ -295,6 +299,26 @@ public class Board extends JPanel implements ActionListener {
 		}
 		
 		repaint();
+	}
+	
+	private void processJunkQueue() {
+		while (!junkQueue.isEmpty()) {
+			addJunkLines(junkQueue.poll());
+		}
+	}
+	
+	public void addJunkAttackToQueue(int numLines) {
+		junkQueue.add(numLines);
+	}
+	
+	public void processMessage(String message) {
+		String[] spaceSplit = message.split(" ");
+		
+		if (spaceSplit.length > 1) {
+			if (spaceSplit[0].equals("ATTACK")) {
+				addJunkAttackToQueue(Integer.parseInt(spaceSplit[1]));
+			}
+		}
 	}
 
 	private void dropDown() {

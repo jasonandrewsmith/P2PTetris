@@ -106,8 +106,16 @@ public class BoardOpponent extends JPanel implements ActionListener {
 	
 	@Override
 	public void actionPerformed(ActionEvent ae) {
-		decodeOpponentData(receiveOpponentData());
-		repaint();		
+		String data = receiveOpponentData();
+		
+		if (data.startsWith("ATTACK")) {
+			parent.board.processMessage(data);;
+		}
+		else {
+			decodeOpponentData(data);
+				
+		}	
+		repaint();
 	}
 	
 	private void clearBoard() {
