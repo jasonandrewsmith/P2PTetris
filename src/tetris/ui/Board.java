@@ -8,6 +8,8 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.Queue;
 
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -30,6 +32,7 @@ public class Board extends JPanel implements ActionListener {
 	private Shape curPiece;
 	public Tetrominoes[] board;
 	public ArrayList<Action> actions = new ArrayList<>();
+	public Queue<Integer> junkQueue;
 	private Tetris parent;
 	
 	public Board(Tetris parent) {
@@ -38,6 +41,8 @@ public class Board extends JPanel implements ActionListener {
 		timer = new Timer(400, this); // timer for lines down
 		statusBar = parent.localLabel;
 		board = new Tetrominoes[BOARD_WIDTH * BOARD_HEIGHT];
+		
+		junkQueue = new LinkedList<Integer>();
 		
 		this.parent = parent;
 		
@@ -266,6 +271,30 @@ public class Board extends JPanel implements ActionListener {
 				repaint();
 			}
 		}
+	}
+	
+	private void addJunkLines(int n) {
+		for (int i = BOARD_HEIGHT - 1 ; i >= n; i--) {
+			for (int j = 0; j < BOARD_WIDTH; j++) {
+				board[i * BOARD_WIDTH + j] = shapeAt(j, i - n);
+				board[(i - n) * BOARD_WIDTH + j] = Tetrominoes.NoShape;
+			}
+		}
+		
+		int randomSpace = (int) (Math.random() * (BOARD_WIDTH));
+		
+		for (int i = 0; i < n; i++) {
+			for (int j = 0; j < BOARD_WIDTH; j++) {
+				if (j != randomSpace) {
+					board[i * BOARD_WIDTH + j] = Tetrominoes.LineShape;
+				}
+				else {
+					board[i * BOARD_WIDTH + j] = Tetrominoes.NoShape;
+				}
+			}
+		}
+		
+		repaint();
 	}
 
 	private void dropDown() {
