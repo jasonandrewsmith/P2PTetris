@@ -9,6 +9,10 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.Serializable;
+import java.time.Instant;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.concurrent.TimeUnit;
 
 import javax.swing.BoxLayout;
@@ -17,26 +21,32 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+import javax.swing.Timer;
 
 import tetris.network.*;
 
-public class Tetris extends JFrame {
-
+public class Tetris extends JFrame implements ActionListener {
+ 
 	public JLabel localLabel, opponentLabel;
 	private Connection connection;
 	public BoardOpponent boardOpponent;
 	public Board board;
 	public ServerManager serverManager;
-	public boolean isHost, isReadyToStart = false;
+	public boolean isHost, isReadyToStart = false, pingResponse = false;
 	public String hostname;
 	public int portNumber;
 	public JTextField hostnameTF, portTF;
 	public JButton hostBtn, connectBtn;
-
+	public JLabel timerLabel;
+	public long offset = 0; 
+	public int timerValue = 45;
+	private int timerWaitCount = 3;
+	private Timer timer;
+	
 	public Tetris() {
 		localLabel = new JLabel("0");
 		opponentLabel = new JLabel("0");
-		
+		timer = new Timer(1000, this);
 		board = new Board(this);
 		boardOpponent = new BoardOpponent(this);
 		JPanel infoPanel = createInputPanel();
@@ -90,8 +100,11 @@ public class Tetris extends JFrame {
 		cons.fill = GridBagConstraints.HORIZONTAL;
 		cons.weightx = 1;
 		cons.gridx = 0;
-
+		
+		timerLabel = new JLabel(this.timerValue+"");
+		
 		result.setLayout(new GridBagLayout());
+		result.add(timerLabel);
 		result.add(hostPanel, cons);
 		result.add(portPanel, cons);
 		result.add(hostBtn, cons);
@@ -102,7 +115,139 @@ public class Tetris extends JFrame {
 
 		return result;
 	}
-
+	
+	private class BackgroundResponder extends Thread {
+		public void run() {
+			while(true) {
+				System.out.println("Running thread...");
+				respondToPing();
+				
+				try {
+					Thread.sleep(500);
+				} catch (InterruptedException ex) {
+					Thread.currentThread().interrupt();
+				}	
+			}
+		}
+		
+		private void respondToPing() {
+			// if exception raised then oh well, we continue
+			try {
+				long[] received = (long[])serverManager.receive().content;	
+				received[1] = Instant.now().toEpochMilli();
+				received[2] = Instant.now().toEpochMilli();
+				
+				for(long d : received) {
+					System.out.println("=> " + d);
+				}
+				
+				serverManager.send(received);
+				pingResponse = true;
+			} catch(Exception e) {
+				System.out.println("Caught exception in resp. to ping");
+			}
+		}
+	}
+	
+	private long[] pingOpponent() {		
+		board.timer.stop();
+		boardOpponent.timer.stop();
+		long[] timeStamps = new long[4];
+		timeStamps[0] = Instant.now().toEpochMilli();
+		
+		serverManager.send(timeStamps);
+		
+		while(!pingResponse) {		
+			try {
+				Thread.sleep(50);
+			} catch (InterruptedException ex) {
+				Thread.currentThread().interrupt();
+			}
+			
+			try {
+				timeStamps = (long[])serverManager.receive().content;				
+			} catch(Exception e) {
+				/*just waiting...*/
+				System.out.println("Waiting for ping response");
+			}
+		}
+		
+		timeStamps[3] = Instant.now().toEpochMilli();
+		
+		for(long d : timeStamps) {
+			System.out.println("===> " + d);
+		}
+		
+		System.out.println("\n\n");
+		
+		board.timer.start();
+		boardOpponent.timer.start();
+		return timeStamps;
+	}
+	
+	public void findTimeOffset() {
+		long[][] timeStampSets = new long[10][4];
+		for(int i = 0; i<timeStampSets.length; i++) {
+			timeStampSets[i] = pingOpponent();
+		}
+		
+		long[] deltas = new long[10];
+		for(long[] row : timeStampSets) {
+			int i = 0;
+			for(long timeStamp : row) { 
+				deltas[i] = ((row[3]-row[0]) - (row[2]-row[1])) / 2;
+				i++;
+			}
+		}
+		
+		int indexOfSmallest = 0;
+		for(int k = 0; k<deltas.length; k++) {
+			if(deltas[k] < deltas[indexOfSmallest]) indexOfSmallest = k;
+		}
+		
+		long theta = ((timeStampSets[indexOfSmallest][1]-timeStampSets[indexOfSmallest][0])+
+				      (timeStampSets[indexOfSmallest][2]-timeStampSets[indexOfSmallest][3])) / 2;
+		offset = theta/1000;
+	}
+	
+	@Override
+	public void actionPerformed(ActionEvent ae) {
+		System.out.println("In tetris timer tick!");
+		
+		if(timerValue == 0) {
+			board.statusBar.setText("Times Up! Score: " + board.score);
+			boardOpponent.statusBar.setText("Times Up! Opponent Score: " + boardOpponent.opponentScore);
+			board.timer.stop();
+			boardOpponent.timer.stop();
+			timer.stop();
+		}
+		this.timerLabel.setText(timerValue+"");
+		timerLabel.repaint();
+		
+		System.out.println("VALUE: " + timerValue);
+		
+		// if count is 3 means ready to adjust again
+		// adjusts clock over 1200ms (3 ticks)
+		// by adding the delay/3 to timer delay
+		System.out.println(Math.abs(offset)+"<----------");
+		if(Math.abs(offset) < 10000L) {
+			if(timerWaitCount == 3) {
+				findTimeOffset();
+				try {
+					timer.setDelay(1000 + Math.round(offset/3));					
+				} catch(Exception e) {
+					timer.setDelay(1000);
+				}
+			} else if(timerWaitCount == 0) {
+				timerWaitCount = 4;
+				timer.setDelay(1000);
+			}
+		}
+		timerWaitCount--;
+		timerValue--;
+	}
+	
+	
 	private class inputButtonListener implements ActionListener {
 		@Override
 		public void actionPerformed(ActionEvent e) {					
@@ -192,6 +337,8 @@ public class Tetris extends JFrame {
 				Thread.currentThread().interrupt();
 			}
 		}
+		Tetris.BackgroundResponder repinger = new Tetris.BackgroundResponder();
+		repinger.start();
 	}
 	
 	public static void main(String[] args) {
@@ -202,6 +349,7 @@ public class Tetris extends JFrame {
 		myTetris.setVisible(true);
 		
 		myTetris.waitToStart();
+		myTetris.timer.start();
 		myTetris.board.start();
 		myTetris.boardOpponent.start();
 	}

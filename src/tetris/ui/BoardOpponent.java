@@ -17,15 +17,15 @@ import tetris.network.ServerManager;
 public class BoardOpponent extends JPanel implements ActionListener {
 	private static final int BOARD_WIDTH = 10;
 	private static final int BOARD_HEIGHT = 22;
-	private Timer timer;
+	public Timer timer;
 	public ServerManager serverMananger;
 	private Tetris parent;
 	private Tetrominoes[] board = new Tetrominoes[220];
 	private Shape curPiece;
 	private int curX = 0;
 	private int curY = 0;
-	private int opponentScore = 0;
-	private JLabel statusBar;
+	public int opponentScore = 0;
+	public JLabel statusBar;
 	
 	public BoardOpponent(Tetris parent) {
 		setPreferredSize(new Dimension(200, 400));
@@ -33,7 +33,7 @@ public class BoardOpponent extends JPanel implements ActionListener {
 		
 		this.parent = parent;
 		curPiece = new Shape();
-		timer = new Timer(380, this);
+		timer = new Timer(400, this);
 		board = new Tetrominoes[BOARD_WIDTH * BOARD_HEIGHT];
 		statusBar = parent.opponentLabel;
 		
@@ -69,7 +69,11 @@ public class BoardOpponent extends JPanel implements ActionListener {
 		try {
 			String raw = sc.nextLine();
 			this.statusBar.setText(raw);
-			if(raw.equals("Game Over")) timer.stop();
+			if(raw.charAt(0) == 'G') {
+				timer.stop();
+			} else {
+				opponentScore = Integer.parseInt(raw);
+			}
 		} catch(Exception e) {
 			// idk
 		}

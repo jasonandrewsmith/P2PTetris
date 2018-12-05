@@ -19,18 +19,19 @@ public class Board extends JPanel implements ActionListener {
 
 	private static final int BOARD_WIDTH = 10;
 	private static final int BOARD_HEIGHT = 22;
-	private Timer timer;
+	public Timer timer;
 	private boolean isFallingFinished = false;
 	private boolean isStarted = false;
 	private boolean isPaused = false;
 	private int numLinesRemoved = 0;
 	private int curX = 0;
 	private int curY = 0;
-	private JLabel statusBar;
+	public JLabel statusBar;
 	private Shape curPiece;
 	public Tetrominoes[] board;
 	public ArrayList<Action> actions = new ArrayList<>();
 	private Tetris parent;
+	public String score = "0";
 	
 	public Board(Tetris parent) {
 		setFocusable(true);
@@ -90,7 +91,8 @@ public class Board extends JPanel implements ActionListener {
 			sendData(encodeData());
 			timer.stop();
 			isStarted = false;
-			statusBar.setText("Game Over");
+			score = statusBar.getText();
+			statusBar.setText("Game Over: Score = "+score);
 		}
 	}
 
@@ -261,6 +263,7 @@ public class Board extends JPanel implements ActionListener {
 			if (numFullLines > 0) {
 				numLinesRemoved += numFullLines;
 				statusBar.setText(String.valueOf(numLinesRemoved));
+				score = numLinesRemoved+"";
 				isFallingFinished = true;
 				curPiece.setShape(Tetrominoes.NoShape);
 				repaint();
