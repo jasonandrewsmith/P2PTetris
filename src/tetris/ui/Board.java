@@ -268,8 +268,6 @@ public class Board extends JPanel implements ActionListener {
 			}
 
 			if (numFullLines > 0) {
-				sendData("ATTACK " + numFullLines);
-				
 				numLinesRemoved += numFullLines;
 				statusBar.setText(String.valueOf(numLinesRemoved));
 				score = numLinesRemoved+"";
@@ -277,6 +275,10 @@ public class Board extends JPanel implements ActionListener {
 				curPiece.setShape(Tetrominoes.NoShape);
 				repaint();
 			}
+		}
+		
+		if (numFullLines > 0) {
+			sendData("ATTACK " + numFullLines);
 		}
 	}
 	
