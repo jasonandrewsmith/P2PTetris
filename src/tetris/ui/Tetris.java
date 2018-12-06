@@ -30,11 +30,11 @@ public class Tetris extends JFrame implements ActionListener {
 	public String hostname;
 	public int portNumber;
 	public String connectToHostname;
-	public int connectToPortumber;
+	public int connectToPortNumber;
 	public JTextField hostnameTF, portTF;
 	public JButton hostBtn, connectBtn;
 	public JLabel timerLabel;
-	public int timerValue = 45;
+	public int timerValue = 100;
 	private Timer timer;
 	public Connection viewing;
 	
@@ -144,7 +144,10 @@ public class Tetris extends JFrame implements ActionListener {
 				Tetris.this.portNumber = Integer.parseInt(portTF.getText());
 				
 				Tetris.this.connectToHostname = JOptionPane.showInputDialog("Enter host to connect to:");
-				Tetris.this.connectToPortumber = Integer.parseInt(JOptionPane.showInputDialog("Enter port to connect to:"));
+				Tetris.this.connectToPortNumber = Integer.parseInt(JOptionPane.showInputDialog("Enter port to connect to:"));
+				
+				System.out.println(connectToHostname);
+				System.out.println(connectToPortNumber);
 				
 				Tetris.this.hostBtn.setEnabled(false);
 				Tetris.this.connectBtn.setEnabled(false);	
