@@ -168,36 +168,37 @@ public class Tetris extends JFrame implements ActionListener {
 			return;
 		}
 		
-		Message handShake = serverManager.receive(); 
+		Connection connection = null;
 		
 		// simulate a blocking call
-		while(handShake == null) {
+		while(connection == null) {
 			try {
 				Thread.sleep(1000);
 			} catch (InterruptedException ex) {
 				Thread.currentThread().interrupt();
 			}
-			handShake = serverManager.receive();
+			
+			if (serverManager.getConnected().iterator().hasNext()) {
+				connection = serverManager.getConnected().iterator().next();
+			}
+			else {
+				connection = null;
+			}
 		}
 		// only see game of first client to connect
-		viewing = handShake.getSource();
+		viewing = connection;
 		
 		System.out.println("HANDSHAKE RECIEVED :: HOST");
 		isReadyToStart = true;
 	}
 	
 	public void connectToGame() {
-		
 		try {
-			// 12610 - 12669
-//			int randomNum = ThreadLocalRandom.current().nextInt(12610, 12669 + 1);
 			connection = new Connection(hostname, portNumber);
 			serverManager = new ServerManager(connection);
 			
 			viewing = new Connection(connectToHostname, connectToPortNumber);
 			serverManager.connect(viewing);
-//			serverManager.connect( new Connection("localhost", 12550) );
-			serverManager.send("Sup");
 		} catch (Exception e) {
 			System.err.println("Error while establishing connection!\n");
 			e.printStackTrace();
