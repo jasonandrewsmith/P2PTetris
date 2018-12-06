@@ -159,7 +159,7 @@ public class Tetris extends JFrame implements ActionListener {
 
 	public void hostGame() {
 		try {
-			connection = new Connection("localhost", 12550);
+			connection = new Connection(hostname, portNumber);
 			serverManager = new ServerManager(connection);
 
 		} catch (Exception e) {
@@ -187,14 +187,15 @@ public class Tetris extends JFrame implements ActionListener {
 	}
 	
 	public void connectToGame() {
-		viewing = new Connection("localhost", 12550);
+		
 		try {
 			// 12610 - 12669
-			int randomNum = ThreadLocalRandom.current().nextInt(12610, 12669 + 1);
-			connection = new Connection("localhost", randomNum);
+//			int randomNum = ThreadLocalRandom.current().nextInt(12610, 12669 + 1);
+			connection = new Connection(hostname, portNumber);
 			serverManager = new ServerManager(connection);
 			
-			serverManager.connect( new Connection(hostname, portNumber) );
+			viewing = new Connection(connectToHostname, connectToPortNumber);
+			serverManager.connect(viewing);
 //			serverManager.connect( new Connection("localhost", 12550) );
 			serverManager.send("Sup");
 		} catch (Exception e) {
