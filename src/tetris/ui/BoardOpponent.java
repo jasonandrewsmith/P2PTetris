@@ -12,6 +12,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.Timer;
 
+import tetris.network.Message;
 import tetris.network.ServerManager;
 
 public class BoardOpponent extends JPanel implements ActionListener {
@@ -55,9 +56,14 @@ public class BoardOpponent extends JPanel implements ActionListener {
 	private String receiveOpponentData() {
 		String fromOpponent = "";
 		try {
-			fromOpponent = (String)parent.serverManager.receive().content;
+			Message recieved = parent.serverManager.receive();
+			
+			// only update with data from proper node
+			if(recieved.getSource().getPort() == parent.viewAtPort) {
+				fromOpponent = (String)parent.serverManager.receive().content;
+			}
 		} catch(Exception e) {
-			System.out.println("Failed to recieve data from client!");
+//			System.out.println("Failed to recieve data from client!");
 		}
 //		System.out.println("GOT THIS: \n" + fromOpponent);
 		return fromOpponent;
@@ -71,6 +77,7 @@ public class BoardOpponent extends JPanel implements ActionListener {
 			this.statusBar.setText(raw);
 			if(raw.charAt(0) == 'G') {
 				timer.stop();
+				statusBar.setText("Game Over! Score: " + opponentScore);
 			} else {
 				opponentScore = Integer.parseInt(raw);
 			}
@@ -112,6 +119,7 @@ public class BoardOpponent extends JPanel implements ActionListener {
 	public void actionPerformed(ActionEvent ae) {
 		decodeOpponentData(receiveOpponentData());
 		repaint();		
+		System.out.println("CLIENT :: VAP = " + parent.viewAtPort);
 	}
 	
 	private void clearBoard() {

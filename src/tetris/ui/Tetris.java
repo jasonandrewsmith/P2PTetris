@@ -13,6 +13,7 @@ import java.io.Serializable;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 
 import javax.swing.BoxLayout;
@@ -38,10 +39,9 @@ public class Tetris extends JFrame implements ActionListener {
 	public JTextField hostnameTF, portTF;
 	public JButton hostBtn, connectBtn;
 	public JLabel timerLabel;
-	public long offset = 0; 
 	public int timerValue = 45;
-	private int timerWaitCount = 3;
 	private Timer timer;
+	public int viewAtPort;
 	
 	public Tetris() {
 		localLabel = new JLabel("0");
@@ -116,104 +116,8 @@ public class Tetris extends JFrame implements ActionListener {
 		return result;
 	}
 	
-	private class BackgroundResponder extends Thread {
-		public void run() {
-			while(true) {
-				System.out.println("Running thread...");
-				respondToPing();
-				
-				try {
-					Thread.sleep(500);
-				} catch (InterruptedException ex) {
-					Thread.currentThread().interrupt();
-				}	
-			}
-		}
-		
-		private void respondToPing() {
-			// if exception raised then oh well, we continue
-			try {
-				long[] received = (long[])serverManager.receive().content;	
-				received[1] = Instant.now().toEpochMilli();
-				received[2] = Instant.now().toEpochMilli();
-				
-				for(long d : received) {
-					System.out.println("=> " + d);
-				}
-				
-				serverManager.send(received);
-				pingResponse = true;
-			} catch(Exception e) {
-				System.out.println("Caught exception in resp. to ping");
-			}
-		}
-	}
-	
-	private long[] pingOpponent() {		
-		board.timer.stop();
-		boardOpponent.timer.stop();
-		long[] timeStamps = new long[4];
-		timeStamps[0] = Instant.now().toEpochMilli();
-		
-		serverManager.send(timeStamps);
-		
-		while(!pingResponse) {		
-			try {
-				Thread.sleep(50);
-			} catch (InterruptedException ex) {
-				Thread.currentThread().interrupt();
-			}
-			
-			try {
-				timeStamps = (long[])serverManager.receive().content;				
-			} catch(Exception e) {
-				/*just waiting...*/
-				System.out.println("Waiting for ping response");
-			}
-		}
-		
-		timeStamps[3] = Instant.now().toEpochMilli();
-		
-		for(long d : timeStamps) {
-			System.out.println("===> " + d);
-		}
-		
-		System.out.println("\n\n");
-		
-		board.timer.start();
-		boardOpponent.timer.start();
-		return timeStamps;
-	}
-	
-	public void findTimeOffset() {
-		long[][] timeStampSets = new long[10][4];
-		for(int i = 0; i<timeStampSets.length; i++) {
-			timeStampSets[i] = pingOpponent();
-		}
-		
-		long[] deltas = new long[10];
-		for(long[] row : timeStampSets) {
-			int i = 0;
-			for(long timeStamp : row) { 
-				deltas[i] = ((row[3]-row[0]) - (row[2]-row[1])) / 2;
-				i++;
-			}
-		}
-		
-		int indexOfSmallest = 0;
-		for(int k = 0; k<deltas.length; k++) {
-			if(deltas[k] < deltas[indexOfSmallest]) indexOfSmallest = k;
-		}
-		
-		long theta = ((timeStampSets[indexOfSmallest][1]-timeStampSets[indexOfSmallest][0])+
-				      (timeStampSets[indexOfSmallest][2]-timeStampSets[indexOfSmallest][3])) / 2;
-		offset = theta/1000;
-	}
-	
 	@Override
-	public void actionPerformed(ActionEvent ae) {
-		System.out.println("In tetris timer tick!");
-		
+	public void actionPerformed(ActionEvent ae) {		
 		if(timerValue == 0) {
 			board.statusBar.setText("Times Up! Score: " + board.score);
 			boardOpponent.statusBar.setText("Times Up! Opponent Score: " + boardOpponent.opponentScore);
@@ -223,27 +127,6 @@ public class Tetris extends JFrame implements ActionListener {
 		}
 		this.timerLabel.setText(timerValue+"");
 		timerLabel.repaint();
-		
-		System.out.println("VALUE: " + timerValue);
-		
-		// if count is 3 means ready to adjust again
-		// adjusts clock over 1200ms (3 ticks)
-		// by adding the delay/3 to timer delay
-		System.out.println(Math.abs(offset)+"<----------");
-		if(Math.abs(offset) < 10000L) {
-			if(timerWaitCount == 3) {
-				findTimeOffset();
-				try {
-					timer.setDelay(1000 + Math.round(offset/3));					
-				} catch(Exception e) {
-					timer.setDelay(1000);
-				}
-			} else if(timerWaitCount == 0) {
-				timerWaitCount = 4;
-				timer.setDelay(1000);
-			}
-		}
-		timerWaitCount--;
 		timerValue--;
 	}
 	
@@ -281,7 +164,7 @@ public class Tetris extends JFrame implements ActionListener {
 			return;
 		}
 		
-		Object handShake = serverManager.receive(); 
+		Message handShake = serverManager.receive(); 
 		
 		// simulate a blocking call
 		while(handShake == null) {
@@ -292,15 +175,19 @@ public class Tetris extends JFrame implements ActionListener {
 			}
 			handShake = serverManager.receive();
 		}
+		// only see game of first client to connect
+		viewAtPort = handShake.getSource().getPort();
 		
 		System.out.println("HANDSHAKE RECIEVED :: HOST");
-		serverManager.send("Yo");
 		isReadyToStart = true;
 	}
 	
 	public void connectToGame() {
+		viewAtPort = 12550;
 		try {
-			connection = new Connection("localhost", 12551);
+			// 12610 - 12669
+			int randomNum = ThreadLocalRandom.current().nextInt(12610, 12669 + 1);
+			connection = new Connection("localhost", randomNum);
 			serverManager = new ServerManager(connection);
 			
 			serverManager.connect( new Connection(hostname, portNumber) );
@@ -312,19 +199,6 @@ public class Tetris extends JFrame implements ActionListener {
 			return;
 		}
 		
-		Object handShake = serverManager.receive();
-		
-		// simulate a blocking call
-		while(handShake == null) {
-			try {
-				Thread.sleep(1000);
-			} catch (InterruptedException ex) {
-				Thread.currentThread().interrupt();
-			}
-			handShake = serverManager.receive();
-		}
-		
-		System.out.println("HANDSHAKE RECIEVED :: CLIENT");
 		isReadyToStart = true;
 	}
 
@@ -337,8 +211,6 @@ public class Tetris extends JFrame implements ActionListener {
 				Thread.currentThread().interrupt();
 			}
 		}
-		Tetris.BackgroundResponder repinger = new Tetris.BackgroundResponder();
-		repinger.start();
 	}
 	
 	public static void main(String[] args) {
