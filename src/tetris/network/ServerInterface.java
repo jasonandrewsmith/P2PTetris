@@ -4,6 +4,11 @@ import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.util.Set;
 
+/**
+ * RMI interface to allow communication with the server.
+ * 
+ * @author Dominik Lameter
+ */
 public interface ServerInterface extends Remote {
 
 	/**

@@ -10,6 +10,12 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+/**
+ * Class that handles all the networking to provide a fully connected P2P overlay network. Manages sending and receiving messages for the client as well as connecting to other servers.
+ * 
+ * @author Dominik Lameter
+ *
+ */
 public class ServerManager {
 	
 	private Server server;

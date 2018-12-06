@@ -3,6 +3,11 @@ package tetris.network;
 import java.io.Serializable;
 import java.util.Objects;
 
+/**
+ * POJO that holds server connection information.
+ * 
+ * @author Dominik Lameter
+ */
 public class Connection implements Serializable {
 
 	/**

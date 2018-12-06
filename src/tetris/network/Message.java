@@ -2,6 +2,11 @@ package tetris.network;
 
 import java.io.Serializable;
 
+/**
+ * POJO that holds information about a message.
+ * 
+ * @author Dominik Lameter
+ */
 public class Message implements Serializable {
 
 	/**

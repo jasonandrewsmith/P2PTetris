@@ -5,6 +5,11 @@ import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+/**
+ * Server that implements ServerInterface and allows the receiving of messages sent to the server.
+ * 
+ * @author dominik
+ */
 public class Server implements ServerInterface {
 
 	private Connection host;
