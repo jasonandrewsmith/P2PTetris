@@ -119,14 +119,18 @@ public class BoardOpponent extends JPanel implements ActionListener {
 	}
 	
 	@Override
-	public void actionPerformed(ActionEvent ae) {		
+	public void actionPerformed(ActionEvent ae) {
 		String data = receiveOpponentData();
-		if (data.startsWith("ATTACK")) {
-			parent.board.processMessage(data);
+		while (!data.isEmpty()) {
+			if (data.startsWith("ATTACK")) {
+				parent.board.processMessage(data);
+			}
+			else {
+				decodeOpponentData(data);
+			}
+			
+			data = receiveOpponentData();
 		}
-		else {
-			decodeOpponentData(data);
-		}	
 		repaint();
 	}
 	
