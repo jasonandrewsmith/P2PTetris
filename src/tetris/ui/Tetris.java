@@ -127,6 +127,8 @@ public class Tetris extends JFrame implements ActionListener {
 		@Override
 		public void actionPerformed(ActionEvent e) {					
 			if (e.getSource() == Tetris.this.hostBtn) {
+				Tetris.this.hostname = hostnameTF.getText();
+				Tetris.this.portNumber = Integer.parseInt(portTF.getText());
 				Tetris.this.hostBtn.setEnabled(false);
 				Tetris.this.connectBtn.setEnabled(false);	
 				
