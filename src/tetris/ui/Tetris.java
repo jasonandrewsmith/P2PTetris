@@ -12,6 +12,7 @@ import java.util.concurrent.ThreadLocalRandom;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.Timer;
@@ -28,6 +29,8 @@ public class Tetris extends JFrame implements ActionListener {
 	public boolean isHost, isReadyToStart = false, pingResponse = false;
 	public String hostname;
 	public int portNumber;
+	public String connectToHostname;
+	public int connectToPortumber;
 	public JTextField hostnameTF, portTF;
 	public JButton hostBtn, connectBtn;
 	public JLabel timerLabel;
@@ -139,6 +142,10 @@ public class Tetris extends JFrame implements ActionListener {
 				}
 				Tetris.this.hostname = hostnameTF.getText();
 				Tetris.this.portNumber = Integer.parseInt(portTF.getText());
+				
+				Tetris.this.connectToHostname = JOptionPane.showInputDialog("Enter host to connect to:");
+				Tetris.this.connectToPortumber = Integer.parseInt(JOptionPane.showInputDialog("Enter port to connect to:"));
+				
 				Tetris.this.hostBtn.setEnabled(false);
 				Tetris.this.connectBtn.setEnabled(false);	
 				
