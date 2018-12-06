@@ -53,23 +53,33 @@ public class BoardOpponent extends JPanel implements ActionListener {
 		g.drawLine(x + squareWidth() - 1, y + squareHeight() - 1, x + squareWidth() - 1, y + 1);
 	}
 	
-	private String receiveOpponentData() {
-		String fromOpponent = "";
-		try {
-			Message recieved = parent.serverManager.receive();
-			
-			System.out.println(recieved.getSource().equals(parent.viewing));
-			
-			// only update with data from proper node
-			if(recieved.getSource().equals(parent.viewing)) {
-				fromOpponent = (String)recieved.content;
-			}
-			System.out.println("Success!");
-		} catch(Exception e) {
-			System.out.println("Failed to receive data from client!");
+	private String receiveStringContentFromMessage(Message message) {
+		String content = null;
+		
+		if (message.content instanceof String) {
+			content = (String) message.content;
 		}
-//		System.out.println("GOT THIS: \n" + fromOpponent);
-		return fromOpponent;
+		
+		return content;
+	}
+	
+	private void receiveData() {
+		Message message = parent.serverManager.receive();
+		
+		while (message != null) {
+			if (message.content instanceof String) {
+				String data = receiveStringContentFromMessage(message);
+				
+				if (data.startsWith("ATTACK")) {
+					parent.board.processMessage(data);
+				}
+				else if (message.source.equals(parent.viewing)) {
+					decodeOpponentData(data);
+				}
+			}
+			
+			message = parent.serverManager.receive();
+		}
 	}
 	
 	// converts and applies new board data
@@ -120,17 +130,7 @@ public class BoardOpponent extends JPanel implements ActionListener {
 	
 	@Override
 	public void actionPerformed(ActionEvent ae) {
-		String data = receiveOpponentData();
-		while (!data.isEmpty()) {
-			if (data.startsWith("ATTACK")) {
-				parent.board.processMessage(data);
-			}
-			else {
-				decodeOpponentData(data);
-			}
-			
-			data = receiveOpponentData();
-		}
+		receiveData();
 		repaint();
 	}
 	
