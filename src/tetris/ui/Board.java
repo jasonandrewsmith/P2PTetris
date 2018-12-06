@@ -8,6 +8,8 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.Queue;
 
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -30,6 +32,7 @@ public class Board extends JPanel implements ActionListener {
 	private Shape curPiece;
 	public Tetrominoes[] board;
 	public ArrayList<Action> actions = new ArrayList<>();
+	public Queue<Integer> junkQueue;
 	private Tetris parent;
 	public String score = "0";
 	
@@ -39,6 +42,8 @@ public class Board extends JPanel implements ActionListener {
 		timer = new Timer(400, this); // timer for lines down
 		statusBar = parent.localLabel;
 		board = new Tetrominoes[BOARD_WIDTH * BOARD_HEIGHT];
+		
+		junkQueue = new LinkedList<Integer>();
 		
 		this.parent = parent;
 		
@@ -77,7 +82,8 @@ public class Board extends JPanel implements ActionListener {
 		removeFullLines();
 
 		if (!isFallingFinished) {
-			newPiece();
+//			newPiece();
+			isFallingFinished = true;
 		}
 	}
 
@@ -140,6 +146,7 @@ public class Board extends JPanel implements ActionListener {
 //		System.out.println("Sent data!");
 		
 		if (isFallingFinished) {
+			processJunkQueue();
 			isFallingFinished = false;
 			newPiece();
 		} else {
@@ -261,12 +268,58 @@ public class Board extends JPanel implements ActionListener {
 			}
 
 			if (numFullLines > 0) {
+				sendData("ATTACK " + numFullLines);
+				
 				numLinesRemoved += numFullLines;
 				statusBar.setText(String.valueOf(numLinesRemoved));
 				score = numLinesRemoved+"";
 				isFallingFinished = true;
 				curPiece.setShape(Tetrominoes.NoShape);
 				repaint();
+			}
+		}
+	}
+	
+	private void addJunkLines(int n) {
+		for (int i = BOARD_HEIGHT - 1 ; i >= n; i--) {
+			for (int j = 0; j < BOARD_WIDTH; j++) {
+				board[i * BOARD_WIDTH + j] = shapeAt(j, i - n);
+				board[(i - n) * BOARD_WIDTH + j] = Tetrominoes.NoShape;
+			}
+		}
+		
+		int randomSpace = (int) (Math.random() * (BOARD_WIDTH));
+		
+		for (int i = 0; i < n; i++) {
+			for (int j = 0; j < BOARD_WIDTH; j++) {
+				if (j != randomSpace) {
+					board[i * BOARD_WIDTH + j] = Tetrominoes.LineShape;
+				}
+				else {
+					board[i * BOARD_WIDTH + j] = Tetrominoes.NoShape;
+				}
+			}
+		}
+		
+		repaint();
+	}
+	
+	private void processJunkQueue() {
+		while (!junkQueue.isEmpty()) {
+			addJunkLines(junkQueue.poll());
+		}
+	}
+	
+	public void addJunkAttackToQueue(int numLines) {
+		junkQueue.add(numLines);
+	}
+	
+	public void processMessage(String message) {
+		String[] spaceSplit = message.split(" ");
+		
+		if (spaceSplit.length > 1) {
+			if (spaceSplit[0].equals("ATTACK")) {
+				addJunkAttackToQueue(Integer.parseInt(spaceSplit[1]));
 			}
 		}
 	}

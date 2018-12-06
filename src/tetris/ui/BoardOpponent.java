@@ -117,9 +117,16 @@ public class BoardOpponent extends JPanel implements ActionListener {
 	
 	@Override
 	public void actionPerformed(ActionEvent ae) {
-		decodeOpponentData(receiveOpponentData());
-		repaint();		
 		System.out.println("CLIENT :: VAP = " + parent.viewAtPort);
+		
+		String data = receiveOpponentData();
+		if (data.startsWith("ATTACK")) {
+			parent.board.processMessage(data);
+		}
+		else {
+			decodeOpponentData(data);
+		}	
+		repaint();
 	}
 	
 	private void clearBoard() {
