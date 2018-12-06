@@ -58,12 +58,15 @@ public class BoardOpponent extends JPanel implements ActionListener {
 		try {
 			Message recieved = parent.serverManager.receive();
 			
+			System.out.println(recieved.getSource().equals(parent.viewing));
+			
 			// only update with data from proper node
-			if(recieved.getSource().getPort() == parent.viewAtPort) {
-				fromOpponent = (String)parent.serverManager.receive().content;
+			if(recieved.getSource().equals(parent.viewing)) {
+				fromOpponent = (String)recieved.content;
 			}
+			System.out.println("Success!");
 		} catch(Exception e) {
-//			System.out.println("Failed to recieve data from client!");
+			System.out.println("Failed to receive data from client!");
 		}
 //		System.out.println("GOT THIS: \n" + fromOpponent);
 		return fromOpponent;
@@ -116,9 +119,7 @@ public class BoardOpponent extends JPanel implements ActionListener {
 	}
 	
 	@Override
-	public void actionPerformed(ActionEvent ae) {
-		System.out.println("CLIENT :: VAP = " + parent.viewAtPort);
-		
+	public void actionPerformed(ActionEvent ae) {		
 		String data = receiveOpponentData();
 		if (data.startsWith("ATTACK")) {
 			parent.board.processMessage(data);

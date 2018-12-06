@@ -41,7 +41,7 @@ public class Tetris extends JFrame implements ActionListener {
 	public JLabel timerLabel;
 	public int timerValue = 45;
 	private Timer timer;
-	public int viewAtPort;
+	public Connection viewing;
 	
 	public Tetris() {
 		localLabel = new JLabel("0");
@@ -176,14 +176,14 @@ public class Tetris extends JFrame implements ActionListener {
 			handShake = serverManager.receive();
 		}
 		// only see game of first client to connect
-		viewAtPort = handShake.getSource().getPort();
+		viewing = handShake.getSource();
 		
 		System.out.println("HANDSHAKE RECIEVED :: HOST");
 		isReadyToStart = true;
 	}
 	
 	public void connectToGame() {
-		viewAtPort = 12550;
+		viewing = new Connection("localhost", 12550);
 		try {
 			// 12610 - 12669
 			int randomNum = ThreadLocalRandom.current().nextInt(12610, 12669 + 1);
