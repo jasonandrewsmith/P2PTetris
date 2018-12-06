@@ -8,7 +8,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 /**
  * Server that implements ServerInterface and allows the receiving of messages sent to the server.
  * 
- * @author dominik
+ * @author Dominik Lameter
  */
 public class Server implements ServerInterface {
 
