@@ -42,10 +42,20 @@ public class Server implements ServerInterface {
 		return manager.getConnected();
 	}
 	
+	/**
+	 * Grabs a message from the Server's queue.
+	 * 
+	 * @return Message from queue or null if queue is empty
+	 */
 	public Message receive() {
 		return queue.poll();
 	}
 	
+	/**
+	 * Returns the size of the server's queue right now.
+	 * 
+	 * @return int size of queue
+	 */
 	public int queueSize() {
 		return queue.size();
 	}

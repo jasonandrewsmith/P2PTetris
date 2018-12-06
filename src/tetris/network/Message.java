@@ -16,10 +16,20 @@ public class Message implements Serializable {
 		this.content = content;
 	}
 	
+	/**
+	 * Returns the source of the message.
+	 * 
+	 * @return Connection representing message source
+	 */
 	public Connection getSource() {
 		return source;
 	}
 	
+	/**
+	 * Returns the content of the message.
+	 * 
+	 * @return Object representing message content
+	 */
 	public Object getContent() {
 		return content;
 	}

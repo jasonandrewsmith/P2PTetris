@@ -28,6 +28,12 @@ public class ServerManager {
 		this.connections = new ConcurrentHashMap<Connection, ServerInterface>();
 	}
 	
+	/**
+	 * Connects to a peer and all the peers connected to that peer. Enables a fully connected network.
+	 * 
+	 * @param connection Connection of server to connect to
+	 * @throws RemoteException
+	 */
 	public void connect(Connection connection) throws RemoteException {
 		// Connect to server's registry
 		Registry otherRegistry = LocateRegistry.getRegistry(connection.getHost(), connection.getPort());
@@ -61,18 +67,39 @@ public class ServerManager {
 		}
 	}
 	
+	/**
+	 * Disconnects from the specified connection if it exists. Does nothing otherwise.
+	 * 
+	 * @param conn Connection of the client to disconnect from
+	 */
 	public void disconnect(Connection conn) {
 		connections.remove(conn);
 	}
 	
+	/**
+	 * Returns the information for the current host.
+	 * 
+	 * @return Connection representing this application
+	 */
 	public Connection getConnection() {
 		return server.getHostConnection();
 	}
 	
+	/**
+	 * Returns the set of connections connected to this client.
+	 * 
+	 * @return Set<Connection> of connected clients
+	 */
 	public Set<Connection> getConnected() {
 		return connections.keySet();
 	}
 	
+	
+	/**
+	 * Sends an object to all the connected servers. Disconnects from a server if it fails to send a message to it.
+	 * 
+	 * @param object Object to send in a message.
+	 */
 	public void send(Object object) {
 		Message outgoingMessage = new Message(server.getHostConnection(), object);
 		
@@ -87,10 +114,18 @@ public class ServerManager {
 		}
 	}
 	
+	/**
+	 * Try to receive a Message from the Server. Returns null if there are no messages.
+	 * 
+	 * @return Message or null if there are messages.
+	 */
 	public Message receive() {
 		return server.receive();
 	}
 	
+	/**
+	 * Closes all connections the current manager has and unbinds the server from the rmi repository
+	 */
 	public void close() {
 		for (ServerInterface otherServer : connections.values()) {
 			try {
