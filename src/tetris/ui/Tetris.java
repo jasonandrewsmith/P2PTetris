@@ -19,6 +19,13 @@ import javax.swing.Timer;
 
 import tetris.network.*;
 
+
+/**
+ * Class that handles the main game logic and macro level and has references to the board and board opponent
+ * 
+ * @author Jason Smith
+ *
+ */
 public class Tetris extends JFrame implements ActionListener {
  
 	public JLabel localLabel, opponentLabel;
@@ -67,7 +74,10 @@ public class Tetris extends JFrame implements ActionListener {
 //		this.serverManager.close(); not sure if needed
 		System.exit(0);
 	}
-
+	
+	/**
+	 * Helper for creating middle input panel
+	 */
 	private JPanel createInputPanel() {
 		JPanel result = new JPanel();
 		result.setPreferredSize(new Dimension(200, 200));
@@ -125,7 +135,7 @@ public class Tetris extends JFrame implements ActionListener {
 		timerValue--;
 	}
 	
-	
+	c
 	private class inputButtonListener implements ActionListener {
 		@Override
 		public void actionPerformed(ActionEvent e) {					
@@ -156,7 +166,10 @@ public class Tetris extends JFrame implements ActionListener {
 			}
 		}
 	}
-
+	
+	/**
+	 * Hosting new game
+	 */
 	public void hostGame() {
 		try {
 			connection = new Connection(hostname, portNumber);
@@ -192,6 +205,9 @@ public class Tetris extends JFrame implements ActionListener {
 		isReadyToStart = true;
 	}
 	
+	/**
+	 * Connnecting to a host
+	 */
 	public void connectToGame() {
 		try {
 			connection = new Connection(hostname, portNumber);
@@ -208,7 +224,9 @@ public class Tetris extends JFrame implements ActionListener {
 		isReadyToStart = true;
 	}
 
-	// block until connection established
+	/**
+	 * Blocking call to wait for a connection to be established
+	 */
 	public void waitToStart() {
 		while(!isReadyToStart) {
 			try {
