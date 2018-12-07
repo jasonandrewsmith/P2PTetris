@@ -17,7 +17,7 @@ import tetris.network.ServerManager;
 
 
 /**
- * Class that handles all the networking to provide a fully connected P2P overlay network. Manages sending and receiving messages for the client as well as connecting to other servers.
+ * Class that handles all logic dealing with the opponent's board you are view on the right side of the game
  * 
  * @author Jason Smith
  *
