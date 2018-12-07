@@ -15,6 +15,14 @@ import javax.swing.Timer;
 import tetris.network.Message;
 import tetris.network.ServerManager;
 
+
+/**
+ * Class that handles all the networking to provide a fully connected P2P overlay network. Manages sending and receiving messages for the client as well as connecting to other servers.
+ * 
+ * @author Jason Smith
+ *
+ */
+
 public class BoardOpponent extends JPanel implements ActionListener {
 	private static final int BOARD_WIDTH = 10;
 	private static final int BOARD_HEIGHT = 22;
@@ -53,6 +61,7 @@ public class BoardOpponent extends JPanel implements ActionListener {
 		g.drawLine(x + squareWidth() - 1, y + squareHeight() - 1, x + squareWidth() - 1, y + 1);
 	}
 	
+	
 	private String receiveStringContentFromMessage(Message message) {
 		String content = null;
 		
@@ -63,6 +72,10 @@ public class BoardOpponent extends JPanel implements ActionListener {
 		return content;
 	}
 	
+	
+	/**
+	 * Recieves content from network
+	 */
 	private void receiveData() {
 		Message message = parent.serverManager.receive();
 		
@@ -82,7 +95,10 @@ public class BoardOpponent extends JPanel implements ActionListener {
 		}
 	}
 	
-	// converts and applies new board data
+	
+	/**
+	 * Converts and applies new opponent board data
+	 */
 	private void decodeOpponentData(String data) {
 		Scanner sc = new Scanner(data);
 		try {
@@ -105,6 +121,10 @@ public class BoardOpponent extends JPanel implements ActionListener {
 		}
 	}
 	
+	
+	/**
+	 * Convert string to enum
+	 */
 	private Tetrominoes determineType(String s) {
 		switch(s) {
 			case "NoShape": 
