@@ -17,6 +17,13 @@ import javax.swing.Timer;
 
 import tetris.network.*;
 
+/**
+ * Class that handles the local game being played via keyboard
+ * 
+ * @author Jason Smith
+ *
+ */
+
 public class Board extends JPanel implements ActionListener {
 
 	private static final int BOARD_WIDTH = 10;
@@ -65,13 +72,21 @@ public class Board extends JPanel implements ActionListener {
 	public Tetrominoes shapeAt(int x, int y) {
 		return board[y * BOARD_WIDTH + x];
 	}
-
+	
+	/**
+	 * Empties board
+	 */
+	
 	private void clearBoard() {
 		for (int i = 0; i < BOARD_HEIGHT * BOARD_WIDTH; i++) {
 			board[i] = Tetrominoes.NoShape;
 		}
 	}
-
+	
+	/**
+	 * Logic performed when block touches down
+	 */
+	
 	private void pieceDropped() {
 		for (int i = 0; i < 4; i++) {
 			int x = curX + curPiece.x(i);
@@ -86,7 +101,11 @@ public class Board extends JPanel implements ActionListener {
 			isFallingFinished = true;
 		}
 	}
-
+	
+	/**
+	 * logic for new piece
+	 */
+	
 	public void newPiece() {
 		curPiece.setRandomShape();
 		curX = BOARD_WIDTH / 2 + 1;
@@ -101,12 +120,20 @@ public class Board extends JPanel implements ActionListener {
 			statusBar.setText("Game Over: Score = "+score);
 		}
 	}
-
+	
+	/**
+	 * Moves current block down one
+	 */
+	
 	private void oneLineDown() {
 		if (!tryMove(curPiece, curX, curY - 1))
 			pieceDropped();
 //		sendData(encodeData());
 	}
+	
+	/**
+	 * Converts data to string
+	 */
 	
 	private String encodeData() {
 		String jsonString = "";
@@ -133,6 +160,10 @@ public class Board extends JPanel implements ActionListener {
 		return jsonString;
 	}
 	
+	/**
+	 * Sends data to network
+	 */
+	
 	private void sendData(String data) {
 		try {
 			parent.serverManager.send(data);
@@ -140,6 +171,10 @@ public class Board extends JPanel implements ActionListener {
 			System.out.println("Data failed to send!");
 		}
 	}
+	
+	/**
+	 * Logic performed each timer tick
+	 */
 	
 	@Override
 	public void actionPerformed(ActionEvent ae) {		
@@ -154,7 +189,11 @@ public class Board extends JPanel implements ActionListener {
 		}
 		sendData(encodeData());
 	}
-
+	
+	/**
+	 * Draws indvidual squares of tetrominoes
+	 */
+	
 	private void drawSquare(Graphics g, int x, int y, Tetrominoes shape) {
 		Color color = shape.color;
 		g.setColor(color);
@@ -166,7 +205,11 @@ public class Board extends JPanel implements ActionListener {
 		g.drawLine(x + 1, y + squareHeight() - 1, x + squareWidth() - 1, y + squareHeight() - 1);
 		g.drawLine(x + squareWidth() - 1, y + squareHeight() - 1, x + squareWidth() - 1, y + 1);
 	}
-
+	
+	/**
+	 * Called when repaint on board is called
+	 */
+	
 	@Override
 	public void paint(Graphics g) {
 		super.paint(g);
@@ -193,7 +236,11 @@ public class Board extends JPanel implements ActionListener {
 			}
 		}
 	}
-
+	
+	/**
+	 * Starts game
+	 */
+	
 	public void start() {
 		if (isPaused)
 			return;
@@ -205,7 +252,11 @@ public class Board extends JPanel implements ActionListener {
 		newPiece();
 		timer.start();
 	}
-
+	
+	/**
+	 * Pauses game
+	 */
+	
 	public void pause() {
 		if (!isStarted)
 			return;
@@ -243,7 +294,11 @@ public class Board extends JPanel implements ActionListener {
 
 		return true;
 	}
-
+	
+	/**
+	 * Removes a full line on the board
+	 */
+	
 	private void removeFullLines() {
 		int numFullLines = 0;
 
@@ -281,6 +336,10 @@ public class Board extends JPanel implements ActionListener {
 			sendData("ATTACK " + numFullLines);
 		}
 	}
+	
+	/**
+	 * Adds junk blocks to board
+	 */
 	
 	private void addJunkLines(int n) {
 		for (int i = BOARD_HEIGHT - 1 ; i >= n; i--) {
@@ -338,7 +397,11 @@ public class Board extends JPanel implements ActionListener {
 		}
 		pieceDropped();
 	}
-
+	
+	/**
+	 * Keyboard listener
+	 */
+	
 	class MyTetrisAdapter extends KeyAdapter {
 		@Override
 		public void keyPressed(KeyEvent ke) {
